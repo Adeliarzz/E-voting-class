@@ -53,7 +53,7 @@ evoting-class/
 ### 4️⃣ Jalankan Frontend
 Buka file:
 frontend/index.html
-Pastikan Metamask terhubung ke jaringan Ganache.
+Pastikan terhubung ke jaringan Ganache.
 
 ---
 
