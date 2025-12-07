@@ -2,7 +2,6 @@
 
 Sistem e-voting berbasis Blockchain Ethereum menggunakan Truffle, Ganache, dan Web3.js. 
 Tujuan project ini adalah membuat proses pemilihan yang aman, transparan, dan tidak dapat dimanipulasi.
-
 ---
 
 ## 🧩 Teknologi yang Digunakan
