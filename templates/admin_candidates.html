@@ -1,0 +1,146 @@
+{% extends "admin_layout.html" %}
+
+{% block admin_content %}
+<div class="glass-card_header"
+    style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h2>👥 Candidate Management</h2>
+        <p>Manage the election candidates (Head & Vice).</p>
+    </div>
+    <a href="/admin/add-candidate-page" class="btn-vote" style="text-decoration: none;">
+        ➕ Add New Candidate
+    </a>
+</div>
+
+<!-- Grid Container -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+    {% for candidate in candidates %}
+    <div class="glass-card" onclick="openModal('{{ candidate.id }}')"
+        style="padding: 0; overflow: hidden; cursor: pointer; transition: transform 0.2s; position: relative; border: 1px solid rgba(255,255,255,0.1);">
+
+        <!-- Hover Effect Style -->
+        <style>
+            .glass-card:hover {
+                transform: translateY(-5px);
+                border-color: var(--primary-color);
+            }
+        </style>
+
+        <!-- Image Banner (Split 50/50) -->
+        <div style="height: 160px; display: flex; width: 100%;">
+            <img src="{{ url_for('static', filename='uploads/' + candidate.image_file) }}"
+                style="width: 50%; height: 100%; object-fit: cover; object-position: top;">
+            <img src="{{ url_for('static', filename='uploads/' + (candidate.image_vice if candidate.image_vice else 'default.jpg')) }}"
+                style="width: 50%; height: 100%; object-fit: cover; object-position: top; border-left: 1px solid rgba(255,255,255,0.2);">
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.2rem;">{{ candidate.name }}</h3>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">& {{ candidate.vice_name }}</p>
+                </div>
+                <div
+                    style="background: var(--accent-color); color: #000; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;">
+                    {{ candidate.voteCount }} Votes
+                </div>
+            </div>
+
+            <p style="color: #cbd5e1; font-size: 0.9rem; font-style: italic; margin-bottom: 1.5rem;">"{{
+                candidate.description }}"</p>
+
+            <!-- Actions (Prevent Modal Open on Click) -->
+            <div style="display: flex; gap: 10px;" onclick="event.stopPropagation()">
+                <form action="{{ url_for('delete_candidate', candidate_id=candidate.id) }}" method="POST"
+                    onsubmit="return confirm('Delete {{ candidate.name }}? This removes them from the App UI.');"
+                    style="width: 100%;">
+                    <button type="submit"
+                        style="width: 100%; background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                        🗑️ Delete Candidate
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Hidden Data for Modal -->
+        <div id="data-{{ candidate.id }}" style="display: none;">
+            <span class="vision">{{ candidate.vision if candidate.vision else 'No Vision provided.' }}</span>
+            <span class="mission">{{ candidate.mission if candidate.mission else 'No Mission provided.' }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not candidates %}
+<div class="glass-card" style="text-align: center; color: #94a3b8; padding: 3rem;">
+    <p>No candidates found. Click "Add New Candidate" above to start.</p>
+</div>
+{% endif %}
+
+<!-- Detail Modal -->
+<div id="candidateModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="glass-card"
+        style="width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; animation: slideUp 0.3s ease;">
+        <button onclick="closeModal()"
+            style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+
+        <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">📄 Candidate Details</h2>
+
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">VISION</h4>
+            <p id="modalVision" style="color: #94a3b8; margin-top: 5px; white-space: pre-wrap;"></p>
+        </div>
+
+        <div>
+            <h4 style="color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">MISSION
+            </h4>
+            <p id="modalMission" style="color: #94a3b8; margin-top: 5px; white-space: pre-wrap;"></p>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: right;">
+            <button onclick="closeModal()" class="btn-vote" style="width: auto; padding: 8px 20px;">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    function openModal(id) {
+        const dataDiv = document.getElementById('data-' + id);
+        const vision = dataDiv.querySelector('.vision').innerText;
+        const mission = dataDiv.querySelector('.mission').innerText;
+
+        document.getElementById('modalVision').innerText = vision;
+        document.getElementById('modalMission').innerText = mission;
+
+        document.getElementById('candidateModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('candidateModal').style.display = 'none';
+    }
+
+    // Close on outside click
+    window.onclick = function (event) {
+        const modal = document.getElementById('candidateModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

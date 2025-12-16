@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper"
+    style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem; min-height: 80vh; padding-top: 1rem;">
+
+    <!-- Sidebar -->
+    <aside class="glass-card sidebar" style="height: fit-content; padding: 0;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h3 style="margin: 0; color: var(--primary-color);">Admin Panel</h3>
+            <small style="color: #94a3b8;">Administrator</small>
+        </div>
+
+        <nav class="sidebar-nav" style="display: flex; flex-direction: column; padding: 1rem;">
+            <a href="/admin" class="sidebar-link {% if active_page == 'dashboard' %}active{% endif %}"
+                style="padding: 10px; color: white; text-decoration: none; margin-bottom: 5px; border-radius: 5px;">
+                📊 Dashboard
+            </a>
+            <a href="/admin/candidates" class="sidebar-link {% if active_page == 'candidates' %}active{% endif %}"
+                style="padding: 10px; color: white; text-decoration: none; margin-bottom: 5px; border-radius: 5px;">
+                👥 Candidates
+            </a>
+            <a href="/admin/users" class="sidebar-link {% if active_page == 'users' %}active{% endif %}"
+                style="padding: 10px; color: white; text-decoration: none; margin-bottom: 5px; border-radius: 5px;">
+                👤 Users
+            </a>
+            <a href="/logout" class="sidebar-link"
+                style="padding: 10px; color: #f87171; text-decoration: none; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                🚪 Logout
+            </a>
+
+            <a href="/" class="sidebar-link" target="_blank"
+                style="padding: 10px; color: #3b82f6; text-decoration: none; margin-top: 10px;">
+                🌐 View Live Site
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+        {% block admin_content %}{% endblock %}
+    </main>
+
+</div>
+
+<style>
+    .sidebar-link:hover,
+    .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--accent-color) !important;
+    }
+</style>
+{% endblock %}

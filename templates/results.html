@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="result-header" style="text-align: center; margin-bottom: 3rem;">
+    <h2
+        style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Live Election Results</h2>
+    <p style="color: #94a3b8; font-size: 1.1rem;">Real-time data from the Ethereum Blockchain</p>
+</div>
+
+<!-- Stats Overview Cards -->
+<div class="stats-grid"
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div class="glass-card" style="text-align: center; padding: 1.5rem;">
+        <h4 style="color: #cbd5e1; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Total Votes</h4>
+        <div id="totalVotes" style="font-size: 2.5rem; font-weight: 800; color: white; margin: 10px 0;">0</div>
+        <p style="color: #94a3b8; font-size: 0.8rem;">Recorded on Chain</p>
+    </div>
+
+    <div class="glass-card" style="text-align: center; padding: 1.5rem;">
+        <h4 style="color: #cbd5e1; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Leading Candidate
+        </h4>
+        <div id="leadingCandidate"
+            style="font-size: 1.5rem; font-weight: 700; color: var(--accent-color); margin: 10px 0;">-</div>
+        <p style="color: #94a3b8; font-size: 0.8rem;">Provisional Winner</p>
+    </div>
+</div>
+
+<div class="results-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+
+    <!-- Left: Chart -->
+    <div class="glass-card" style="padding: 2rem;">
+        <h3 style="margin-bottom: 1.5rem; color: white;">Analytics</h3>
+        <canvas id="voteChart"></canvas>
+    </div>
+
+    <!-- Right: Detailed List -->
+    <div class="results-list">
+        {% for candidate in candidates %}
+        <div class="glass-card result-row"
+            style="padding: 1rem 1.5rem; margin-bottom: 1rem; border-left: 4px solid var(--primary-color);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.2rem; color: white;">{{ candidate.name }}</h3>
+                    <p style="margin: 2px 0 0; color: #94a3b8; font-size: 0.9rem;">& {{ candidate.vice_name }}</p>
+                </div>
+                <div style="text-align: right;">
+                    <span class="vote-number"
+                        style="display: block; font-size: 1.8rem; font-weight: 800; color: white;">{{
+                        candidate.voteCount }}</span>
+                    <span style="font-size: 0.8rem; color: #64748b;">VOTES</span>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div
+                style="margin-top: 10px; background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden;">
+                <div id="bar-{{ candidate.id }}"
+                    style="height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); width: 0%;"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        .results-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Data from Backend
+    const candidates = [
+        {% for candidate in candidates %}
+    {
+        id: "{{ candidate.id }}",
+            name: "{{ candidate.name }}",
+                votes: { { candidate.voteCount } }
+    },
+    {% endfor %}
+    ];
+
+    // 1. Calculate Stats
+    let totalVotes = 0;
+    let leadingName = "-";
+    let maxVotes = -1;
+
+    candidates.forEach(c => {
+        totalVotes += c.votes;
+        if (c.votes > maxVotes) {
+            maxVotes = c.votes;
+            leadingName = c.name;
+        } else if (c.votes === maxVotes && maxVotes > 0) {
+            leadingName += " & " + c.name; // Tie
+        }
+    });
+
+    if (totalVotes === 0) leadingName = "No Votes Yet";
+
+    // Update DOM
+    document.getElementById('totalVotes').innerText = totalVotes;
+    document.getElementById('leadingCandidate').innerText = leadingName;
+
+    // Update Progress Bars (Percentage)
+    candidates.forEach(c => {
+        const percentage = totalVotes === 0 ? 0 : (c.votes / totalVotes) * 100;
+        document.getElementById(`bar-${c.id}`).style.width = `${percentage}%`;
+    });
+
+    // 2. Render Chart
+    const ctx = document.getElementById('voteChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: candidates.map(c => c.name),
+            datasets: [{
+                label: 'Votes',
+                data: candidates.map(c => c.votes),
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.8)', // Blue
+                    'rgba(139, 92, 246, 0.8)', // Purple
+                    'rgba(236, 72, 153, 0.8)', // Pink
+                    'rgba(16, 185, 129, 0.8)', // Green
+                    'rgba(245, 158, 11, 0.8)'  // Orange
+                ],
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#cbd5e1' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

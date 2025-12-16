@@ -1,5 +1,5 @@
-const ClassVote = artifacts.require("ClassVote");
+const Evoting = artifacts.require("Evoting");
 
 module.exports = function (deployer) {
-  deployer.deploy(ClassVote);
+  deployer.deploy(Evoting);
 };
